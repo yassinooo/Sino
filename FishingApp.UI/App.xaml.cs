@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Windows;
 using Microsoft.Extensions.Hosting;
@@ -11,7 +12,7 @@ namespace FishingApp.UI
 {
     public partial class App : Application
     {
-        private IHost _host;
+        internal IHost _host;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -33,14 +34,20 @@ namespace FishingApp.UI
                     // Business services
                     services.AddScoped<IBidService, BidService>();
                     services.AddScoped<ICatchService, CatchService>();
+                    services.AddScoped<IBuyerService, BuyerService>();
 
-                    // ViewModels and MainWindow
+                    // ViewModels and Windows
                     services.AddSingleton<MainViewModel>();
+                    services.AddSingleton<BuyersViewModel>();
                     services.AddSingleton<MainWindow>();
+                    services.AddTransient<BuyersWindow>();
                 })
                 .Build();
 
             _host.Start();
+
+            // Initialize DB and seed data so app works without manual migrations
+            DbInitializer.Initialize(_host.Services);
 
             var main = _host.Services.GetRequiredService<MainWindow>();
             main.Show();
